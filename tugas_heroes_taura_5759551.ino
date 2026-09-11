@@ -6,12 +6,10 @@
 #define EN_PIN  10
 #define IN1     A0
 #define IN2     A1
-
 #define ENC_A   2
 #define ENC_B   3
 
 #define NUM_LED 8
-
 // KEYPAD 
 // 1 = CW, 2 = CCW, 0 = Stop
 // 6 = Speed Up, 4 = Speed Down
@@ -23,18 +21,14 @@ char keys[4][4] = {
   {'7','8','9','C'},
   {'*','0','#','D'}
 };
-
 byte rowPins[4] = {12, 11, 9, 8};
 byte colPins[4] = {7, 6, 5, 4};
-
 Keypad keypad = Keypad(
   makeKeymap(keys), rowPins, colPins, 4, 4
 );
-
 Adafruit_NeoPixel led(
   NUM_LED, LED_PIN, NEO_GRB + NEO_KHZ800
 );
-
 // VARIABEL
 int speedPWM = 0;
 int direction = 0;       // 0 Stop, 1 CW, 2 CCW
@@ -50,13 +44,11 @@ bool encoderFault = false;
 void encoderPulse() {
   encoderCount++;
 }
-
 // SETUP 
 void setup() {
   pinMode(EN_PIN, OUTPUT);
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
-
   pinMode(ENC_A, INPUT);
   pinMode(ENC_B, INPUT);
 
@@ -64,10 +56,8 @@ void setup() {
   led.show();
 
   attachInterrupt(digitalPinToInterrupt(ENC_A), encoderPulse, CHANGE);
-
   stopMotor();
 }
-
 // LOOP 
 void loop() {
 
@@ -80,13 +70,11 @@ void loop() {
     if (eStop)
       stopMotor();
   }
-
   // LOCKED STATE
   if (eStop) {
     blinkRed();
     return;
   }
-
   // KEYPAD CONTROL
   if (key) {
 
@@ -94,20 +82,16 @@ void loop() {
       direction = 1;
       if (speedPWM == 0) speedPWM = 128;
     }
-
     else if (key == '2') {
       direction = 2;
       if (speedPWM == 0) speedPWM = 128;
     }
-
     else if (key == '0') {
       stopMotor();
     }
-
     else if (key == '6') {
       speedPWM = min(255, speedPWM + 32);
     }
-
     else if (key == '4') {
       speedPWM = max(0, speedPWM - 32);
 
@@ -115,12 +99,10 @@ void loop() {
         direction = 0;
     }
   }
-
   motorControl();
   checkEncoder();
   showSpeed();
 }
-
 // MOTOR 
 void motorControl() {
 
@@ -130,7 +112,6 @@ void motorControl() {
     digitalWrite(IN1, HIGH);
     digitalWrite(IN2, LOW);
   }
-
   else if (direction == 2) {
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, HIGH);
@@ -140,7 +121,6 @@ void motorControl() {
     stopMotor();
   }
 }
-
 void stopMotor() {
 
   speedPWM = 0;
@@ -152,7 +132,6 @@ void stopMotor() {
 
   encoderFault = false;
 }
-
 // ENCODER FAULT 
 void checkEncoder() {
 
@@ -162,7 +141,6 @@ void checkEncoder() {
     encoderFault = false;
     return;
   }
-
   if (millis() - lastCheck >= 1000) {
 
     if (encoderCount == oldCount)
@@ -174,7 +152,6 @@ void checkEncoder() {
     lastCheck = millis();
   }
 }
-
 // NEOPIXEL 
 void showSpeed() {
 
@@ -184,19 +161,16 @@ void showSpeed() {
     led.show();
     return;
   }
-
   int leds;
 
   // Normal = encoder
   if (!encoderFault) {
     leds = map(encoderCount % 50, 0, 50, 1, 8);
   }
-
   // Encoder error = PWM fallback
   else {
     leds = map(speedPWM, 0, 255, 0, 8);
   }
-
   uint32_t color;
 
   if (direction == 1)
@@ -209,7 +183,6 @@ void showSpeed() {
 
   led.show();
 }
-
 // E-STOP 
 void blinkRed() {
 
@@ -227,7 +200,6 @@ void blinkRed() {
       for (int i = 0; i < NUM_LED; i++)
         led.setPixelColor(i, led.Color(255, 0, 0));
     }
-
     led.show();
   }
 }
